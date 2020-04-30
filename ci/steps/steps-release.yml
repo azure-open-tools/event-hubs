@@ -1,0 +1,20 @@
+parameters:
+  workingDir: ''
+  versionNumber: ''
+
+steps:
+  - bash: |
+      version="$(go run version.go)"
+      export VERSION="$(version)"
+    displayName: "Extract Version"
+
+  - task: GithubRelease@0
+    displayName: 'Create GitHub Release'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    inputs:
+      gitHubConnection: fafg-github
+      repositoryName: azure-open-tools/event-hubs
+      action: create
+      tagSource: manual
+      title: 'Event Hubs Lib'
+      tag: "v$(VERSION)"

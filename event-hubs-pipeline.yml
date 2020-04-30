@@ -1,0 +1,46 @@
+
+trigger:
+  branches:
+    include:
+      - master
+      - feature/*
+      - issue/*
+  paths:
+    exclude:
+      - README.md
+
+variables:
+  major: 1
+  minor: 0
+  patch: 0
+  rev: rev-$(git rev-parse --short HEAD)
+
+stages:
+  - stage: Build, Test, Lint
+    jobs:
+      - job: Build_Test_Lint
+        displayName: '[Sender] Build, Test, Lint'
+        pool:
+          vmImage: 'ubuntu-18.04'
+        steps:
+          - template: ci/steps/steps-build.yml
+            parameters:
+              workingDir: 'sender'
+
+      - job: Build_Test_Lint
+        displayName: '[Receiver] Build, Test, Lint'
+        pool:
+          vmImage: 'ubuntu-18.04'
+        steps:
+          - template: ci/steps/steps-build.yml
+            parameters:
+              workingDir: 'receiver'
+
+#      - job: GitTag
+#        displayName: 'Release and Tag'
+#        pool:
+#          vmImage: 'ubuntu-18.04'
+#        steps:
+#          - template: ci/steps/steps-release.yml
+#            parameters:
+#              versionNumber: '$(major).$(minor).$(patch)'

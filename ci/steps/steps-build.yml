@@ -1,0 +1,23 @@
+parameters:
+  workingDir: ''
+
+steps:
+  - task: GoTool@0
+    inputs:
+      version: 1.14
+    displayName: 'Use Go 1.14'
+
+  - script: make build
+    workingDirectory: '${{ parameters.workingDir }}'
+    displayName: '[${{ parameters.workingDir }}]'
+    name: '${{ parameters.workingDir }}'
+
+  - script: make test
+    workingDirectory: '${{ parameters.workingDir }}'
+    displayName: '[${{ parameters.workingDir }}]'
+    name: '${{ parameters.workingDir }}'
+
+  - script: make lint
+    workingDirectory: '${{ parameters.workingDir }}'
+    displayName: '[${{ parameters.workingDir }}]'
+    name: '${{ parameters.workingDir }}'
