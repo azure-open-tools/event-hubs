@@ -11,7 +11,7 @@ func TestEventBatch_with_100_messages_with_limit_10_return_with_success(t *testi
 	sender.base64String = false
 	sender.properties = []string{"messageId:1234" }
 
-	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), 10, 100, message)
+	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), 10, 100, message, false)
 
 	if len(eventBatches) == 9 {
 		for i := 0; i < len(eventBatches); i++ {
@@ -37,8 +37,8 @@ func TestEventBatch_with_100_messages_and_real_limit_return_one_batch_with_100_m
 	sender.base64String = false
 	sender.properties = []string{"messageId:1234" }
 
-	limit, _ := calcBatchLimit(sender, message)
-	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), int64(limit), 100, message)
+	limit, _ := calcBatchLimit(sender, message, false)
+	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), int64(limit), 100, message, false)
 
 	if len(eventBatches) == 1 {
 		events, _ := eventBatches[0].Get(0)
@@ -56,8 +56,8 @@ func TestEventBatch_with_1million_messages_and_real_limit_success(t *testing.T) 
 	sender.base64String = false
 	sender.properties = []string{"messageId:1234" }
 
-	limit, _ := calcBatchLimit(sender, message)
-	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), int64(limit), 1000000, message)
+	limit, _ := calcBatchLimit(sender, message, false)
+	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), int64(limit), 1000000, message, false)
 
 	if len(eventBatches) == runtime.NumCPU() {
 		var count int
