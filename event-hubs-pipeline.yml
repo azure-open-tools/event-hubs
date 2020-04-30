@@ -19,7 +19,7 @@ stages:
   - stage: Build_Test_Lint_Tag
     displayName: 'Build, Test, Lint, Tag'
     jobs:
-      - job: Build_Test_Lint
+      - job: Sender_Build_Test_Lint
         displayName: '[Sender] Build, Test, Lint'
         pool:
           vmImage: 'ubuntu-18.04'
@@ -28,7 +28,7 @@ stages:
             parameters:
               workingDir: 'sender'
 
-      - job: Build_Test_Lint
+      - job: Reveiver_Build_Test_Lint
         displayName: '[Receiver] Build, Test, Lint'
         pool:
           vmImage: 'ubuntu-18.04'
