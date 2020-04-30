@@ -3,9 +3,7 @@ parameters:
   versionNumber: ''
 
 steps:
-  - bash: |
-      version="$(go run version.go)"
-      export VERSION="$(version)"
+  - script: export VERSION="$(go run version.go)"
     displayName: "Extract Version"
 
   - task: GithubRelease@0
