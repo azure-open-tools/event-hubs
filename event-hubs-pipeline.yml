@@ -14,7 +14,7 @@ variables:
   minor: 0
   patch: 0
   rev: rev-$(git rev-parse --short HEAD)
-  version: $(go run version.go)
+  version: "v$(go run version.go)"
 
 stages:
   - stage: Build_Test_Lint_Tag
