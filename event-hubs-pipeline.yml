@@ -16,7 +16,8 @@ variables:
   rev: rev-$(git rev-parse --short HEAD)
 
 stages:
-  - stage: Build, Test, Lint
+  - stage: Build_Test_Lint_Tag
+    displayName: 'Build, Test, Lint, Tag'
     jobs:
       - job: Build_Test_Lint
         displayName: '[Sender] Build, Test, Lint'
