@@ -29,6 +29,7 @@ stages:
               workingDir: 'sender'
 
       - job: Reveiver_Build_Test_Lint
+        dependsOn: Sender_Build_Test_Lint
         displayName: '[Receiver] Build, Test, Lint'
         pool:
           vmImage: 'ubuntu-18.04'
@@ -37,11 +38,12 @@ stages:
             parameters:
               workingDir: 'receiver'
 
-#      - job: GitTag
-#        displayName: 'Release and Tag'
-#        pool:
-#          vmImage: 'ubuntu-18.04'
-#        steps:
-#          - template: ci/steps/steps-release.yml
-#            parameters:
-#              versionNumber: '$(major).$(minor).$(patch)'
+      - job: GitTag
+        dependsOn: Reveiver_Build_Test_Lint
+        displayName: 'Release and Tag'
+        pool:
+          vmImage: 'ubuntu-18.04'
+        steps:
+          - template: ci/steps/steps-release.yml
+            parameters:
+              versionNumber: '$(major).$(minor).$(patch)'
