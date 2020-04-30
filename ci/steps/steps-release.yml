@@ -3,9 +3,6 @@ parameters:
   versionNumber: ''
 
 steps:
-  - script: export VERSION="$(go run version.go)"
-    displayName: "Extract Version"
-
   - task: GithubRelease@0
     displayName: 'Create GitHub Release'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -15,4 +12,4 @@ steps:
       action: create
       tagSource: manual
       title: 'Event Hubs Lib'
-      tag: "v$(VERSION)"
+      tag: "v${{ parameters.versionNumber }}"
