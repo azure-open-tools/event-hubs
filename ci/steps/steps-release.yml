@@ -11,7 +11,7 @@ steps:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       gitHubConnection: github.com_fafg
-      repositoryName: azure-open-tools/event-hubs
+      repositoryName: event-hubs
       action: create
       tagSource: manual
       title: 'Event Hubs Lib'
