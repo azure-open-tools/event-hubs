@@ -38,6 +38,10 @@ func addProperties(event *eventhub.Event, properties []string) {
 func createAnEvent(base64 bool, message string, withSuffix bool) *eventhub.Event {
 	var event *eventhub.Event
 
+	if withSuffix {
+		message = message + "-" + saltRandString(12)
+	}
+
 	if base64 {
 		decoded, err := b64.StdEncoding.DecodeString(message)
 		if err == nil {
@@ -47,10 +51,6 @@ func createAnEvent(base64 bool, message string, withSuffix bool) *eventhub.Event
 		}
 	} else {
 		event = eventhub.NewEvent([]byte(message))
-	}
-
-	if withSuffix {
-		message = message + "-" + saltRandString(12)
 	}
 
 	return event
