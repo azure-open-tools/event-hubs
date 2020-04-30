@@ -11,7 +11,7 @@ func TestEventBatch_with_100_messages_with_limit_10_return_with_success(t *testi
 	sender.base64String = false
 	sender.properties = []string{"messageId:1234" }
 
-	eventBatches := createEventBatchCollection(sender, runtime.NumCPU(), 10, 100, message, false)
+	eventBatches := createEventBatchCollection(sender, 12, 10, 100, message, false)
 
 	if len(eventBatches) == 9 {
 		for i := 0; i < len(eventBatches); i++ {
@@ -23,11 +23,10 @@ func TestEventBatch_with_100_messages_with_limit_10_return_with_success(t *testi
 			}
 			if len(events) != 10 {
 				t.Errorf("batch with the index %v have %v but should be 10", i, len(events))
-				break
 			}
 		}
 	} else {
-		t.Error("event batches is greater or minor than 10")
+		t.Errorf("event batches is greater or minor than 10")
 	}
 }
 
@@ -44,9 +43,11 @@ func TestEventBatch_with_100_messages_and_real_limit_return_one_batch_with_100_m
 		events, _ := eventBatches[0].Get(0)
 		if len(events) != 100 {
 			t.Errorf("batch with the index %v have %v but should be 100", 0, eventBatches[0].Size())
+			t.FailNow()
 		}
 	} else {
 		t.Error("Test is broken")
+		t.FailNow()
 	}
 }
 
