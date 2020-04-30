@@ -12,7 +12,7 @@ steps:
     displayName: 'Create GitHub Release'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
-      gitHubConnection: azure-open-tools
+      gitHubConnection: github.com_fafg
       repositoryName: azure-open-tools/event-hubs
       action: create
       tagSource: manual
