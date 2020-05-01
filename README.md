@@ -58,7 +58,7 @@ If you didn't use Azure Events Hub yet, you can read more about it: [Event Hubs 
 
 Go Modules:
 ```go
-require github.com/azure-open-tools/event-hubs/sender v1.0.0
+require github.com/azure-open-tools/event-hubs/sender v1.0.3
 ```
 Import
 ```go
@@ -129,7 +129,7 @@ if err == nil {
 # Receiver usage (consumer)
 Go Modules:
 ```go
-require github.com/azure-open-tools/event-hubs/receiver v1.0.0
+require github.com/azure-open-tools/event-hubs/receiver v1.0.1
 ```
 Import
 ```go
