@@ -1,0 +1,58 @@
+language: go
+go: 1.14.2
+
+branches:
+  only:
+    - master
+    - feature/*
+    - issue/*
+
+stages:
+  - buildSender
+  - testSender
+  - buildReceiver
+  - testReceiver
+  - name: github-release
+    if: branch = master
+
+
+addons:
+  apt:
+    packages:
+      - hub
+
+jobs:
+  include:
+    - os: linux
+
+    - stage: buildSender
+      name: "Build Sender"
+      script:
+        - pushd sender
+        - make build
+        - popd
+
+    - stage: testSender
+      name: "Test Sender"
+      script:
+        - pushd sender
+        - make test
+        - popd
+
+    - stage: buildReceiver
+      name: "Build Receiver"
+      script:
+        - pushd receiver
+        - make build
+        - popd
+
+    - stage: testReceiver
+      name: "Test Receiver"
+      script:
+        - pushd receiver
+        - make test
+        - popd
+
+    - stage: github-release
+      name: "GitHub Release"
+      script: make release
