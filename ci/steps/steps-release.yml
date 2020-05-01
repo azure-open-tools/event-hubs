@@ -13,5 +13,6 @@ steps:
       gitHubConnection: github.com_fafg
       repositoryName: azure-open-tools/event-hubs
       action: create
+      target: '$(Build.SourceVersion)'
       tagSource: manual
       tag: "$(version.value)"
