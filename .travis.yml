@@ -15,16 +15,15 @@ stages:
   - name: github-release
     if: branch = master
 
-
+os: linux
+dist: bionic
 addons:
-  apt:
-    packages:
-      - hub
+  snaps:
+    - name: hub
+      confinement: classic
 
 jobs:
   include:
-    - os: linux
-
     - stage: buildSender
       name: "Build Sender"
       script:
