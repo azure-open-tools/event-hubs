@@ -41,10 +41,10 @@ stages:
 
       - job: GitTag
         dependsOn: Reveiver_Build_Test_Lint
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
         displayName: 'Release and Tag'
         pool:
           vmImage: 'ubuntu-18.04'
         steps:
-          - template: ci/steps/steps-release.yml
-            parameters:
-              versionNumber: '$(version)'
+          - script: make release
+            displayName: "Github Release"
