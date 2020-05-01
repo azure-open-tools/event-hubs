@@ -16,7 +16,7 @@ lint:
 
 release:
 	@ chmod +x ../ci/release.sh
-	@ ../ci/release.sh "package" "event-hubs/receiver/v1.0.1"
+	@ ../ci/release.sh "package" "receiver/v1.0.1"
 
 verify:
 	go mod verify

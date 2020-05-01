@@ -16,7 +16,7 @@ lint:
 
 release:
 	@ chmod +x ../ci/release.sh
-	@ ../ci/release.sh "package" "event-hubs/sender/v1.0.3"
+	@ ../ci/release.sh "package" "sender/v1.0.3"
 
 verify:
 	go mod verify
