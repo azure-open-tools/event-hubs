@@ -28,6 +28,7 @@ jobs:
         - pushd sender
         - make build
         - make test
+        - make lint
         - popd
 
     - stage: buildReceiver
@@ -36,6 +37,7 @@ jobs:
         - pushd receiver
         - make build
         - make test
+        - make lint
         - popd
 
     - stage: github-release
