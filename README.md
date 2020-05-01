@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/azure-open-tools/event-hubs.svg?branch=master)](https://travis-ci.org/azure-open-tools/event-hubs)
+
 # Introduction
 `Azure Event Hubs is a highly scalable publish-subscribe service that can ingest millions of 
 events per second and stream them into multiple applications. This lets you process and analyze 

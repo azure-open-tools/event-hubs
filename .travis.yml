@@ -9,9 +9,7 @@ branches:
 
 stages:
   - buildSender
-  - testSender
   - buildReceiver
-  - testReceiver
   - name: github-release
     if: branch = master
 
@@ -29,12 +27,6 @@ jobs:
       script:
         - pushd sender
         - make build
-        - popd
-
-    - stage: testSender
-      name: "Test Sender"
-      script:
-        - pushd sender
         - make test
         - popd
 
@@ -43,12 +35,6 @@ jobs:
       script:
         - pushd receiver
         - make build
-        - popd
-
-    - stage: testReceiver
-      name: "Test Receiver"
-      script:
-        - pushd receiver
         - make test
         - popd
 

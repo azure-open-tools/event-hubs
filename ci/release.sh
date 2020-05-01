@@ -8,6 +8,6 @@ changeLog="$(git --no-pager log --oneline "$latestTag"...HEAD)"
 
 echo "New Version: $version"
 echo "Latest Tag: $latestTag"
-echo "Change Log Since Latest Tag: $changeLog"
+echo -e "Change Log Since Latest Tag: \n$changeLog"
 
 hub release create -m "Azure Event Hubs Lib $version" -m "$changeLog" "$version"
