@@ -41,3 +41,17 @@ jobs:
     - stage: github-release
       name: "GitHub Release"
       script: make release
+
+    - stage: github-release-sender
+      name: "GitHub Release Sender"
+      script:
+        - pushd sender
+        - make release
+        - popd
+
+    - stage: github-release-receiver
+      name: "GitHub Release Receiver"
+      script:
+        - pushd receiver
+        - make release
+        - popd

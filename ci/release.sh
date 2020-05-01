@@ -1,8 +1,23 @@
 #!/usr/bin/env bash
 
 versionFile=$1
+packageVersion=$2
 
-version=$(go run "$versionFile")
+if [[ $versionFile == *"package"* ]];
+then
+  version="$packageVersion"
+else
+  version=$(go run "$versionFile")
+fi
+
+checkTag=$(git --no-pager tag -l | grep "$version" | xargs)
+
+if [[ $checkTag != "" ]];
+then
+  echo "$checkTag already exist, skipping release."
+  exit 0
+fi
+
 latestTag="$(git --no-pager tag -l | tail -1)"
 changeLog="$(git --no-pager log --oneline "$latestTag"...HEAD)"
 
