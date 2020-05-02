@@ -15,10 +15,6 @@ type EventList interface {
 	Set(index int, value *eventhub.Event)
 
 	Container
-	// Empty() bool
-	// Size() int
-	// Clear()
-	// Values() []interface{}
 }
 
 type Container interface {

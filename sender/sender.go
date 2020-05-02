@@ -1,3 +1,11 @@
+// This package helps you to send messages(events) to Azure Event Hubs.
+//
+// you can send message, send messages in batch  which it allows you to send more events at once (it depends of the listSize of your message/event content and properties).
+// you also can enrich your event with metadata adding properties and handle the event before or after send with event handlers.
+//
+// See more about Azure Event Hubs
+//
+// https://azure.microsoft.com/services/event-hubs
 package sender
 
 import (
@@ -11,6 +19,7 @@ import (
 )
 
 type (
+	// ISenderBuilder this interface defines all properties and handlers available to this package functionalities.
 	ISenderBuilder interface {
 		AddPartitionId(partitionId string) ISenderBuilder
 		AddPartitionIds(partitionIds []string) ISenderBuilder
@@ -27,6 +36,7 @@ type (
 		GetSender() (*Sender, error)
 	}
 
+	// Builder struct implements ISenderBuilder which handles sender creation.
 	Builder struct {
 		base64String             bool
 		connString               string
@@ -40,14 +50,16 @@ type (
 		onBeforeSendBatchMessage func(batchSize int, workerIndex int)
 	}
 
+	// ISender defines methods to send operations against azure event hubs.
 	ISender interface {
 		AddProperties(properties map[string]interface{})
 		SendMessage(message string, ctx context.Context) error
 		SendBatchMessage(message string, ctx context.Context) error
 	}
 
+	// Sender struct implements ISender interface methods.
 	Sender struct {
-		// internal fields
+		//internal fields
 		eHub             *eventhub.Hub
 		base64String     bool
 		connString       string
@@ -63,10 +75,12 @@ type (
 	}
 )
 
+// NewSenderBuilder() creates instance of Builder.
 func NewSenderBuilder() *Builder {
 	return &Builder{}
 }
 
+// AddProperty(filter string) add a single property to the event, the format expected is: "propertyKey:propertyValue"
 func (builder *Builder) AddProperty(filter string) ISenderBuilder {
 	if len(strings.TrimSpace(filter)) > 0 {
 		builder.properties = append(builder.properties, filter)
@@ -75,6 +89,7 @@ func (builder *Builder) AddProperty(filter string) ISenderBuilder {
 	return builder
 }
 
+// AddProperty(filters []string) add a slice of properties ex: []string{"propertyKey1:propertyValue1", "propertyKey2:propertyValue2"}
 func (builder *Builder) AddProperties(filters []string) ISenderBuilder {
 	if len(filters) > 0 {
 		builder.properties = append(builder.properties, filters...)
@@ -83,6 +98,7 @@ func (builder *Builder) AddProperties(filters []string) ISenderBuilder {
 	return builder
 }
 
+// AddPartitionId(partitionId string) add single partition. Format expected: "0" (a integer among 0 to 32, it will depends of your Event Hubs settings)
 func (builder *Builder) AddPartitionId(partitionId string) ISenderBuilder {
 	if len(strings.TrimSpace(partitionId)) > 0 {
 		builder.partitionIds = append(builder.partitionIds, partitionId)
@@ -91,6 +107,7 @@ func (builder *Builder) AddPartitionId(partitionId string) ISenderBuilder {
 	return builder
 }
 
+// AddPartitionIds(partitionIds []string) add a slice of partitionIds ex: []string{"0", "1", ..., "32"}
 func (builder *Builder) AddPartitionIds(partitionIds []string) ISenderBuilder {
 	if len(partitionIds) > 0 {
 		builder.partitionIds = append(builder.partitionIds, partitionIds...)
@@ -99,12 +116,16 @@ func (builder *Builder) AddPartitionIds(partitionIds []string) ISenderBuilder {
 	return builder
 }
 
+// SetBase64(isBase64 bool) set true in case of your message is a binary content.
+// it needs to the sender convert back to the binary format([]byte) before send.
 func (builder *Builder) SetBase64(is64base bool) ISenderBuilder {
 	builder.base64String = is64base
 
 	return builder
 }
 
+// SetNumberOfMessages(amount int64) set the number of messages you want to send. This will repeat the message content
+// and send them according the amount you have set.
 func (builder *Builder) SetNumberOfMessages(amount int64) ISenderBuilder {
 	if amount <= 0 {
 		amount = 1
@@ -115,12 +136,19 @@ func (builder *Builder) SetNumberOfMessages(amount int64) ISenderBuilder {
 	return builder
 }
 
+// SetRandomMessageSuffix(withSuffix bool) to avoid the message repetition content in usage along side with SetNumberOfMessages
+// with suffix the library will generate 12 random characters and append in the end of the message content. It useful
+// to make sure different messages are being sent to the event hubs. the format delivered will be something like:
+// "message123-asuYRadaIY1d, where "-asuYRadaIY1d" is the suffix random content generated.
 func (builder *Builder) SetRandomMessageSuffix(withSuffix bool) ISenderBuilder{
 	builder.messageSuffix = withSuffix
 
 	return builder
 }
 
+// SetConnectionString(connStr string) Required field. Connection string format is something like:
+// "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=send;SharedAccessKey=<AccessKey>;EntityPath=<topic>'""
+// note SharedAccessKeyName, there are two available values possible: send and listen. To this library must be SEND
 func (builder *Builder) SetConnectionString(connStr string) ISenderBuilder {
 	if len(strings.TrimSpace(connStr)) > 0 {
 		builder.connString = connStr
@@ -129,6 +157,8 @@ func (builder *Builder) SetConnectionString(connStr string) ISenderBuilder {
 	return builder
 }
 
+// SetOnAfterSendMessage(handler func(event *eventhub.Event)) If you wish to see which event was sent to event hubs, you can
+// register to this handler.
 func (builder *Builder) SetOnAfterSendMessage(handler func(event *eventhub.Event)) ISenderBuilder {
 	if handler != nil {
 		builder.onAfterSendMessage = handler
@@ -137,6 +167,8 @@ func (builder *Builder) SetOnAfterSendMessage(handler func(event *eventhub.Event
 	return builder
 }
 
+// SetOnBeforeSendMessage(handler func(event *eventhub.Event)) If you wish to see which event is about to be sent to event hubs, you can
+// register to this handler.
 func (builder *Builder) SetOnBeforeSendMessage(handler func(event *eventhub.Event)) ISenderBuilder {
 	if handler != nil {
 		builder.onBeforeSendMessage = handler
@@ -145,6 +177,8 @@ func (builder *Builder) SetOnBeforeSendMessage(handler func(event *eventhub.Even
 	return builder
 }
 
+// SetOnAfterSendBatchMessage(handler func(batchSizeSent int, workerIndex int)) If you wish to see which amount of message was sent by batch
+// you can register to this handle, it will delivery the amount of messages sent by a batch and with worker associated to that batch.
 func (builder *Builder) SetOnAfterSendBatchMessage(handler func(batchSizeSent int, workerIndex int)) ISenderBuilder {
 	if handler != nil {
 		builder.onAfterSendBatchMessage = handler
@@ -153,6 +187,9 @@ func (builder *Builder) SetOnAfterSendBatchMessage(handler func(batchSizeSent in
 	return builder
 }
 
+// SetOnBeforeSendBatchMessage(handler func(batchSize int, workerIndex int)) If you wish to see which amount of batches is about to be sent
+// you can register to this handle, it will delivery the amount of batches by worker associated to that batch. It batches can hold thousand of messages
+// at once.
 func (builder *Builder) SetOnBeforeSendBatchMessage(handler func(batchSize int, workerIndex int)) ISenderBuilder {
 	if handler != nil {
 		builder.onBeforeSendBatchMessage = handler
@@ -161,6 +198,7 @@ func (builder *Builder) SetOnBeforeSendBatchMessage(handler func(batchSize int, 
 	return builder
 }
 
+// GetSender() returns the mounted sender structure reference.
 func (builder *Builder) GetSender() (*Sender, error) {
 	if len(strings.TrimSpace(builder.connString)) == 0 {
 		return nil, errors.New("connection string is missing")
@@ -186,6 +224,7 @@ func (builder *Builder) GetSender() (*Sender, error) {
 	return sender, nil
 }
 
+// SendMessage(message string, ctx context.Context) send a message to event hubs.
 func (sender* Sender) SendMessage(message string, ctx context.Context) error {
 	var err error = nil
 	var i int64
@@ -210,6 +249,9 @@ func (sender* Sender) SendMessage(message string, ctx context.Context) error {
 	return err
 }
 
+// SendBatchMessage(message string, ctx context.Context) send a message to event hubs in batch.
+// this function should be used together with SetNumberOfMessages and maybe SetMessageSuffix in the case you are not
+// generating your own random content.
 func (sender* Sender) SendBatchMessage(message string, ctx context.Context) error {
 	limit, err := calcBatchLimit(sender, message, sender.messageSuffix)
 
@@ -227,6 +269,7 @@ func (sender* Sender) SendBatchMessage(message string, ctx context.Context) erro
 	return err
 }
 
+// AddProperties(properties map[string]interface{}) can be used to add properties using map format.
 func (sender *Sender) AddProperties(properties map[string]interface{}) {
 	if len(properties) > 0 {
 		var entry string
