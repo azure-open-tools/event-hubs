@@ -8,8 +8,7 @@ branches:
     - issue/*
 
 stages:
-  - buildSender
-  - buildReceiver
+  - build
   - name: github-release
     if: branch = master
 
@@ -22,18 +21,14 @@ addons:
 
 jobs:
   include:
-    - stage: buildSender
-      name: "Build Sender"
+    - stage: build
+      name: "Build"
       script:
         - pushd sender
         - make build
         - make test
         - make lint
         - popd
-
-    - stage: buildReceiver
-      name: "Build Receiver"
-      script:
         - pushd receiver
         - make build
         - make test
@@ -42,18 +37,11 @@ jobs:
 
     - stage: github-release
       name: "GitHub Release"
-      script: make release
-
-    - stage: github-release-sender
-      name: "GitHub Release Sender"
       script:
+        - make release
         - pushd sender
         - make release
         - popd
-
-    - stage: github-release-receiver
-      name: "GitHub Release Receiver"
-      script:
         - pushd receiver
         - make release
         - popd
