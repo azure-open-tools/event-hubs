@@ -83,7 +83,6 @@ func createEventBatchCollection(sender *Sender, numGoRoutines int, limit int64, 
 						withSuffix)
 					if eventsLeft != nil {
 						result[len(result) - 1].Add(eventsLeft)
-						//messagesCounter = messagesCounter + int64(len(eventsLeft))
 					}
 				}
 
