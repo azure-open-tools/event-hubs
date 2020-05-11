@@ -28,9 +28,13 @@ func addProperties(event *eventhub.Event, properties []string) {
 	}
 
 	for _, value := range properties {
-		keyValue = strings.Split(value, ":")
-		if len(keyValue) == 2 {
-			event.Properties[keyValue[0]] = keyValue[1]
+		keyValue = strings.Split(value, ";")
+
+		for _, v := range keyValue {
+			keyValue = strings.Split(v, ":")
+			if len(keyValue) == 2 {
+				event.Properties[keyValue[0]] = keyValue[1]
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package sender
 
 import (
+	eventhub "github.com/Azure/azure-event-hubs-go/v3"
 	"strings"
 	"testing"
 )
@@ -28,6 +29,26 @@ func TestSenderBuilder_AddProperties(t *testing.T) {
 		}
 	} else {
 		t.Error("builder not instantiated")
+	}
+}
+
+func TestSender_AddProperties_To_Event(t *testing.T) {
+	var properties = []string{"iothub-enqueuedtime:1580737059326;serviceid:11;functionid:15;partnerId1:9b1f9625-09e1-4d1f-a0a0-c0d50b001c5d;trackingid:ctp-1234coba01-integration"}
+	var event = &eventhub.Event{}
+	addProperties(event, properties)
+
+	if len(event.Properties) == 0 {
+		t.Error("properties was not added successfully")
+	}
+}
+
+func TestSender_AddProperty_To_Event(t *testing.T) {
+	var properties = []string{"iothub-enqueuedtime:1580737059326"}
+	var event = &eventhub.Event{}
+	addProperties(event, properties)
+
+	if len(event.Properties) != 1 {
+		t.Error("properties was not added successfully")
 	}
 }
 
