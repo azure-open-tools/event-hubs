@@ -228,21 +228,27 @@ func (builder *Builder) GetSender() (*Sender, error) {
 func (sender* Sender) SendMessage(message string, ctx context.Context) error {
 	var err error = nil
 	var i int64
+	var mutex sync.Mutex
 
 	for i = 0; i < sender.numberOfMessages; i++ {
 		event := createAnEvent(sender.base64String, message, sender.messageSuffix)
 		addProperties(event, sender.properties)
 
 		if sender.onBeforeSendMessage != nil {
+			mutex.Lock()
 			sender.onBeforeSendMessage(event)
+			mutex.Unlock()
 		}
 
+		runtime.Gosched()
 		if err = sendMessage(sender.eHub, ctx, event); err != nil {
 			break
 		}
 
 		if sender.onAfterSendMessage != nil {
+			mutex.Lock()
 			sender.onAfterSendMessage(event)
+			mutex.Unlock()
 		}
 	}
 

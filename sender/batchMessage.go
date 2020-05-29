@@ -4,6 +4,7 @@ import (
 	"context"
 	eventhub "github.com/Azure/azure-event-hubs-go/v3"
 	"math"
+	"runtime"
 	"sync"
 )
 
@@ -48,13 +49,17 @@ func sendBatchMessages(sender *Sender, eventBatches *List, wg *sync.WaitGroup, c
 
 	if eventBatches != nil && eventBatches.Size() > 0 {
 		batchSize := eventBatches.Size()
+		var mutex sync.Mutex
 
 		for i := 0; i < batchSize; i++ {
 			events, _ := eventBatches.Get(i)
+			runtime.Gosched()
 			_ = sender.eHub.SendBatch(ctx, eventhub.NewEventBatchIterator(events...))
 
 			if sender.onAfterSendBatchMessage != nil {
+				mutex.Lock()
 				sender.onAfterSendBatchMessage(len(events), workerIndex)
+				mutex.Unlock()
 			}
 		}
 	}
