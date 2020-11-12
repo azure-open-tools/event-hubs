@@ -104,7 +104,7 @@ func getEventsToBatch(limit int64, numMessages int64, message string, properties
 	withSuffix bool) []*eventhub.Event {
 
 	var events []*eventhub.Event
-	var event* eventhub.Event
+	var event *eventhub.Event
 	var d int64
 
 	for d = 0; d < limit; d++ {
@@ -114,6 +114,66 @@ func getEventsToBatch(limit int64, numMessages int64, message string, properties
 		events = append(events, event)
 
 		if int64(len(events)) == numMessages {
+			break
+		}
+	}
+
+	return events
+}
+
+func createEventBatchCollectionWithEvents(eventsSeed *[]*eventhub.Event, numGoRoutines int, limit int64,
+	numMessages int64) map[int]*List {
+
+	var result = make(map[int]*List)
+	var numOfBatches = int(math.Round(float64(numMessages / limit)))
+	var messagesCounter int64 = 0
+	var offset int64 = 0
+
+	for i := 0; i <= numOfBatches; i++ {
+		for j := 0; j < numGoRoutines; j++ {
+			if result[j] == nil {
+				result[j] = New()
+			}
+
+			events := getEventsToBatchWithEvents(limit, numMessages, eventsSeed, offset)
+			offset = offset + int64(len(events))
+			if offset >= int64(len(*eventsSeed)) {
+				offset = 0
+			}
+			result[j].Add(events)
+
+			messagesCounter = messagesCounter + int64(len(events))
+			if messagesCounter + limit >= numMessages {
+				left := numMessages - messagesCounter
+				if left > 0 {
+					eventsLeft := getEventsToBatchWithEvents(left, numMessages, eventsSeed, offset)
+					if eventsLeft != nil {
+						result[len(result) - 1].Add(eventsLeft)
+					}
+				}
+
+				return result
+			}
+		}
+		i = i + (numGoRoutines - 1)
+	}
+
+	return result
+}
+
+func getEventsToBatchWithEvents(limit int64, numMessages int64, eventsSeed *[]*eventhub.Event, index int64) []*eventhub.Event {
+	var events []*eventhub.Event
+	var event *eventhub.Event
+	var d int64
+	var size = int64(len(*eventsSeed))
+
+	for d = index; d < size; d++ {
+		//any change in the line bellow affect the limit calculation
+		event = (*eventsSeed)[d]
+		events = append(events, event)
+
+		eventsSize := int64(len(events))
+		if eventsSize == numMessages || eventsSize == limit {
 			break
 		}
 	}

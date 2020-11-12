@@ -55,6 +55,7 @@ type (
 		AddProperties(properties map[string]interface{})
 		SendMessage(message string, ctx context.Context) error
 		SendBatchMessage(message string, ctx context.Context) error
+		SendEventsAsBatch(events *[]*eventhub.Event) error
 	}
 
 	// Sender struct implements ISender interface methods.
@@ -222,6 +223,22 @@ func (builder *Builder) GetSender() (*Sender, error) {
 	}
 
 	return sender, nil
+}
+
+func (sender* Sender) SendEventsAsBatch(ctx context.Context, events *[]*eventhub.Event) error {
+	limit, err := calcBatchLimitWithEvents(events)
+
+	if err == nil {
+		numGoRoutines := runtime.NumCPU()
+		eventBatches := createEventBatchCollectionWithEvents(events, numGoRoutines, int64(limit), sender.numberOfMessages)
+		if len(eventBatches) > 0 {
+			var wg sync.WaitGroup
+
+			sender.triggerBatches(ctx, &wg, numGoRoutines, eventBatches)
+		}
+	}
+
+	return err
 }
 
 // SendMessage(message string, ctx context.Context) send a message to event hubs.
