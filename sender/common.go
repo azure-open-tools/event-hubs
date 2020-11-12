@@ -61,17 +61,58 @@ func createAnEvent(base64 bool, message string, withSuffix bool) *eventhub.Event
 }
 
 func calcBatchLimit(sender *Sender, message string, withSuffix bool) (int, error) {
+	event := createAnEvent(sender.base64String, message, withSuffix)
+	addProperties(event, sender.properties)
+
+	return getBatchLimit(event)
+}
+
+func calcBatchLimitWithEvents(events *[]*eventhub.Event) (int, error) {
+	var biggestSize uint32 = 0
+	var biggestEvent *eventhub.Event
+
+	for _, event := range *events {
+		size, err := getEventSize(event)
+		if err == nil {
+			if size > biggestSize {
+				biggestEvent = event
+				biggestSize = size
+			}
+		}
+	}
+
+	return getBatchLimit(biggestEvent)
+}
+
+func getEventSize(event *eventhub.Event) (uint32, error) {
 	id := uuid.New()
 	eb := eventhub.NewEventBatch(id.String(), nil)
 	sizeBeforeEvent := eb.Size()
 
-	event := createAnEvent(sender.base64String, message, withSuffix)
-	addProperties(event, sender.properties)
+	_, err := eb.Add(event)
+
+	if err == nil {
+		msgSize := uint32(eb.Size() - sizeBeforeEvent)
+		defer func() {
+			eb.Clear()
+			eb = nil
+		}()
+		return msgSize, nil
+	}
+
+	return 0, err
+}
+
+func getBatchLimit(event *eventhub.Event) (int, error) {
+	id := uuid.New()
+	eb := eventhub.NewEventBatch(id.String(), nil)
+	sizeBeforeEvent := eb.Size()
 	_, err := eb.Add(event)
 
 	if err == nil {
 		msgSize := eb.Size() - sizeBeforeEvent
 		defer func() {
+			eb.Clear()
 			eb = nil
 		}()
 		return (int(eb.MaxSize) - 100) / msgSize, nil
