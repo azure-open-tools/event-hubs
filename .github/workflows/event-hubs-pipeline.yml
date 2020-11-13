@@ -1,0 +1,65 @@
+name: Event-Hubs-Cli
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore: [ README.md ]
+  pull_request:
+    branches: [ master ]
+    paths-ignore: [ README.md ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.15.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build
+        shell: bash
+        run: |
+          pushd sender
+          make build
+          make test
+          make lint
+          popd
+          pushd receiver
+          make build
+          make test
+          make lint
+          popd
+
+  release:
+    name: Release
+    needs: [build]
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.15.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          make release
+          pushd sender
+          make release
+          popd
+          pushd receiver
+          make release
+          popd
