@@ -16,7 +16,7 @@ lint:
 
 release:
 	@ chmod +x ../ci/release.sh
-	@ ../ci/release.sh "package" "sender/v1.0.6"
+	@ ../ci/release.sh "package" "sender/v1.0.7"
 
 verify:
 	go mod verify
