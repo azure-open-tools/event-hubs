@@ -52,7 +52,7 @@ type (
 
 	// ISender defines methods to send operations against azure event hubs.
 	ISender interface {
-		AddProperties(properties map[string]interface{})
+		AddProperties(properties map[string]string)
 		SendMessage(message string, ctx context.Context) error
 		SendBatchMessage(message string, ctx context.Context) error
 		SendEventsAsBatch(events *[]*eventhub.Event) error
@@ -230,6 +230,11 @@ func (sender* Sender) SendEventsAsBatch(ctx context.Context, events *[]*eventhub
 
 	if err == nil {
 		numGoRoutines := runtime.NumCPU()
+
+		if sender.numberOfMessages <= 0 {
+			sender.numberOfMessages = int64(len(*events))
+		}
+
 		eventBatches := createEventBatchCollectionWithEvents(events, numGoRoutines, int64(limit), sender.numberOfMessages)
 		if len(eventBatches) > 0 {
 			var wg sync.WaitGroup
@@ -242,7 +247,7 @@ func (sender* Sender) SendEventsAsBatch(ctx context.Context, events *[]*eventhub
 }
 
 // SendMessage(message string, ctx context.Context) send a message to event hubs.
-func (sender* Sender) SendMessage(message string, ctx context.Context) error {
+func (sender *Sender) SendMessage(message string, ctx context.Context) error {
 	var err error = nil
 	var i int64
 	var mutex sync.Mutex
@@ -293,12 +298,12 @@ func (sender* Sender) SendBatchMessage(message string, ctx context.Context) erro
 }
 
 // AddProperties(properties map[string]interface{}) can be used to add properties using map format.
-func (sender *Sender) AddProperties(properties map[string]interface{}) {
+func (sender *Sender) AddProperties(properties map[string]string) {
 	if len(properties) > 0 {
 		var entry string
 
 		for key, value := range properties {
-			entry = key + ":" + value.(string)
+			entry = key + ":" + value
 			sender.properties = append(sender.properties, entry)
 		}
 	}
